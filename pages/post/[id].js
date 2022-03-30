@@ -1,38 +1,32 @@
 import ReactMarkdown from "react-markdown";
-import { useContext, useEffect, useMemo } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import { css } from "@emotion/css";
-import { AccountContext } from "../../context";
+import { AccountContext, KontourContext } from "../../context";
 
 const ipfsURI = "https://ipfs.io/ipfs/";
 
-export default function Post({ post }) {
-  const account = useContext(AccountContext);
+export default function Post() {
+  const kontour = useContext(KontourContext);
+  const { account, owner } = useContext(AccountContext);
+  const [post, setPost] = useState(null);
   const router = useRouter();
   const { id } = router.query;
 
-  const kontour = useMemo(() => {
-    if (typeof window !== "undefined") {
-      return window && window.kontour;
-    }
-  }, []);
-
   useEffect(() => {
     async function setup() {
-      if (!kontour?.contracts?.Blog) {
+      if (!kontour) {
         return;
       }
-      const posts = await kontour.contracts.Blog.view.fetchPosts();
-      console.log("posts", posts);
-      const post = posts.find((d) => d[0] === id);
-      const ipfsUrl = `${ipfsURI}/${post[2]}`;
-      const response = await fetch(ipfsUrl);
+      const post = await kontour.contracts.Blog.view.fetchPost(id);
+      const response = await fetch(`${ipfsURI}/${post[2]}`);
       const data = await response.json();
       if (data.coverImage) {
         let coverImage = `${ipfsURI}/${data.coverImage}`;
         data.coverImage = coverImage;
       }
+      setPost(data);
     }
     setup();
   }, [kontour, id]);
@@ -47,7 +41,7 @@ export default function Post({ post }) {
         <div className={container}>
           {
             /* if the owner is the user, render an edit button */
-            ownerAddress === account && (
+            owner === account && (
               <div className={editPost}>
                 <Link href={`/edit-post/${id}`}>
                   <a>Edit post</a>

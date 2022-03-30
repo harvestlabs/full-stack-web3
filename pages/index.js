@@ -1,22 +1,20 @@
 import { css } from "@emotion/css";
-import { useMemo, useState, useContext, useEffect } from "react";
+import { useState, useContext, useEffect } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
-import { KontourContext } from "../context";
+import { KontourContext, AccountContext } from "../context";
 
 export default function Home() {
   const kontour = useContext(KontourContext);
+  const { account, owner } = useContext(AccountContext);
   const [posts, setPosts] = useState([]);
-  const [ownerAddr, setOwnerAddr] = useState("");
 
   useEffect(() => {
     async function setup() {
-      if (!kontour?.contracts?.Blog) {
+      if (!kontour) {
         return;
       }
       const data = await kontour.contracts.Blog.view.fetchPosts();
-      const owner = await kontour.contracts.Blog.view.owner();
-      setOwnerAddr(owner);
       setPosts(JSON.parse(JSON.stringify(data)));
     }
     setup();
@@ -33,7 +31,7 @@ export default function Home() {
         {
           /* map over the posts array and render a button with the post title */
           posts.map((post, index) => (
-            <Link href={`/post/${post[0]}`} key={index}>
+            <Link href={`/post/${post[2]}`} key={index}>
               <a>
                 <div className={linkStyle}>
                   <p className={postTitle}>{post[1]}</p>
@@ -51,17 +49,14 @@ export default function Home() {
         }
       </div>
       <div className={container}>
-        {kontour?.wallet?.getAccountAddress().toLowerCase() ===
-          ownerAddr.toLowerCase() &&
-          posts &&
-          !posts.length && (
-            /* if the signed in user is the account owner, render a button */
-            /* to create the first post */
-            <button className={buttonStyle} onClick={navigate}>
-              Create your first post
-              <img src="/right-arrow.svg" alt="Right arrow" className={arrow} />
-            </button>
-          )}
+        {account === owner && posts && !posts.length && (
+          /* if the signed in user is the account owner, render a button */
+          /* to create the first post */
+          <button className={buttonStyle} onClick={navigate}>
+            Create your first post
+            <img src="/right-arrow.svg" alt="Right arrow" className={arrow} />
+          </button>
+        )}
       </div>
     </div>
   );

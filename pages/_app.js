@@ -1,5 +1,5 @@
 import "../styles/globals.css";
-import { useEffect, useMemo, useState, useCallback, useContext } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { AccountContext, KontourContext } from "../context.js";
 import { css } from "@emotion/css";
@@ -10,33 +10,22 @@ function MyApp({ Component, pageProps }) {
   const [owner, setOwner] = useState("");
   const [kontour, setKontour] = useState(null);
 
-  const requestUserAccounts = useCallback(async () => {
-    const account = await kontour?.wallets?.requestMetamaskAccounts();
-    if (account) {
-      setAccount(account);
-    }
-  }, [kontour]);
-
-  const updateState = useCallback(async () => {
-    if (kontour == null) {
-      return;
-    }
-    const owner = await kontour.contracts.Blog.view.owner();
-    setOwner(owner);
-  }, [kontour]);
-
   useEffect(() => {
     async function setup() {
       if (kontour) {
-        await requestUserAccounts();
-        await updateState();
+        const account = await kontour?.wallets?.requestMetamaskAccounts();
+        if (account) {
+          setAccount(account.toLowerCase());
+        }
+        const owner = await kontour.contracts.Blog.view.owner();
+        setOwner(owner.toLowerCase());
       }
     }
     document.addEventListener("KONTOUR_CONTRACTS_LOADED", () => {
       setKontour(window?.kontour);
     });
     setup();
-  }, [kontour, updateState, requestUserAccounts]);
+  }, [kontour]);
 
   /* eslint-disable @next/next/no-sync-scripts*/
   return (
@@ -44,7 +33,7 @@ function MyApp({ Component, pageProps }) {
       <script
         type="text/javascript"
         // TODO: fill this in with your SDK from kontour.io
-        src="http://localhost:8080/sdk/V0-MTg5NzU1NjFkLWM4YTAtNDdlZC1iM2M1LWE0ZDA3MWU3Nzc5Zg=="
+        src=""
       />
       <nav className={nav}>
         <div className={header}>
@@ -70,7 +59,7 @@ function MyApp({ Component, pageProps }) {
           {
             /* if the signed in user is the contract owner, we */
             /* show the nav link to create a new post */
-            account.toLowerCase() === owner.toLowerCase() && (
+            account === owner && (
               <Link href="/create-post">
                 <a className={link}>Create Post</a>
               </Link>
@@ -80,7 +69,9 @@ function MyApp({ Component, pageProps }) {
       </nav>
       <div className={container}>
         <KontourContext.Provider value={kontour}>
-          <Component {...pageProps} />
+          <AccountContext.Provider value={{ account, owner }}>
+            <Component {...pageProps} />
+          </AccountContext.Provider>
         </KontourContext.Provider>
       </div>
     </div>
