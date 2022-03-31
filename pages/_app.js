@@ -21,7 +21,7 @@ function MyApp({ Component, pageProps }) {
     if (maybeSdk) {
       const s = document.createElement("script");
       s.type = "text/javascript";
-      s.src = `http://localhost:8080/sdk/${maybeSdk}`;
+      s.src = `https://api.kontour.io/sdk/${maybeSdk}`;
       document.body.appendChild(s);
     }
   }, [router.query.sdk]);
