@@ -20,13 +20,19 @@ export default function Post() {
         return;
       }
       const post = await kontour.contracts.Blog.view.fetchPost(id);
-      const response = await fetch(`${ipfsURI}/${post[2]}`);
-      const data = await response.json();
-      if (data.coverImage) {
-        let coverImage = `${ipfsURI}/${data.coverImage}`;
-        data.coverImage = coverImage;
+      try {
+        const response = await fetch(`${ipfsURI}/${post[2]}`);
+        const data = await response.json();
+        if (data.coverImage) {
+          let coverImage = `${ipfsURI}/${data.coverImage}`;
+          data.coverImage = coverImage;
+        }
+        setPost(data);
+      } catch (e) {
+        setPost({
+          title: post[1],
+        });
       }
-      setPost(data);
     }
     setup();
   }, [kontour, id]);

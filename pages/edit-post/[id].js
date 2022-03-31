@@ -29,18 +29,24 @@ export default function Post() {
       return;
     }
     const val = await kontour.contracts.Blog.view.fetchPost(id);
-    const response = await fetch(`${ipfsURI}/${val[2]}`);
-    const data = await response.json();
-    if (data.coverImage) {
-      let coverImage = `${ipfsURI}/${data.coverImage}`;
-      data.coverImage = coverImage;
-    }
-
     const postId = Number(val[0]);
-    /* finally we append the post ID to the post data */
-    /* we need this ID to make updates to the post */
-    data.id = postId;
-    setPost(data);
+    try {
+      const response = await fetch(`${ipfsURI}/${val[2]}`);
+      const data = await response.json();
+      if (data.coverImage) {
+        let coverImage = `${ipfsURI}/${data.coverImage}`;
+        data.coverImage = coverImage;
+      }
+      /* finally we append the post ID to the post data */
+      /* we need this ID to make updates to the post */
+      data.id = postId;
+      setPost(data);
+    } catch (e) {
+      setPost({
+        title: val[1],
+        id: postId,
+      });
+    }
   }
 
   async function savePostToIpfs() {

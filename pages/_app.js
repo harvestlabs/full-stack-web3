@@ -2,6 +2,7 @@ import "../styles/globals.css";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { AccountContext, KontourContext } from "../context.js";
+import { useRouter } from "next/router";
 import { css } from "@emotion/css";
 import "easymde/dist/easymde.min.css";
 
@@ -9,6 +10,21 @@ function MyApp({ Component, pageProps }) {
   const [account, setAccount] = useState("");
   const [owner, setOwner] = useState("");
   const [kontour, setKontour] = useState(null);
+  const router = useRouter();
+
+  /* eslint-disable @next/next/no-sync-scripts*/
+  useEffect(() => {
+    if (router.query.sdk) {
+      localStorage.setItem("kontour-sdk", router.query.sdk);
+    }
+    const maybeSdk = localStorage.getItem("kontour-sdk");
+    if (maybeSdk) {
+      const s = document.createElement("script");
+      s.type = "text/javascript";
+      s.src = `http://localhost:8080/sdk/${maybeSdk}`;
+      document.body.appendChild(s);
+    }
+  }, [router.query.sdk]);
 
   useEffect(() => {
     async function setup() {
@@ -27,14 +43,8 @@ function MyApp({ Component, pageProps }) {
     setup();
   }, [kontour]);
 
-  /* eslint-disable @next/next/no-sync-scripts*/
   return (
     <div>
-      <script
-        type="text/javascript"
-        // TODO: fill this in with your SDK from kontour.io
-        src="http://localhost:8080/sdk/V0-MTBiZTg4OTJjLTkwMzUtNDJmMC05ZDFlLWRmYTM2ZmY2M2VjOA=="
-      />
       <nav className={nav}>
         <div className={header}>
           <Link href="/">
