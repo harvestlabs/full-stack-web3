@@ -33,7 +33,7 @@ function MyApp({ Component, pageProps }) {
       <script
         type="text/javascript"
         // TODO: fill this in with your SDK from kontour.io
-        src=""
+        src="http://localhost:8080/sdk/V0-MTBiZTg4OTJjLTkwMzUtNDJmMC05ZDFlLWRmYTM2ZmY2M2VjOA=="
       />
       <nav className={nav}>
         <div className={header}>
